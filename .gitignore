@@ -1,0 +1,8 @@
+**/main
+**/test.e
+**/test.o
+**/files/
+*.o
+*.gch
+*.out
+*.log
