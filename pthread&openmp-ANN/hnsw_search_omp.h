@@ -17,7 +17,6 @@ hnsw_search_omp(hnswlib::HierarchicalNSW<float>& appr_alg,
     #pragma omp parallel num_threads(num_threads)
     {
         int tid = omp_get_thread_num();
-        // 注意：searchKnn 内部使用线程局部 visited list，多个线程同时读索引是安全的
         auto pq = appr_alg.searchKnn(query, k);
         local_results[tid] = std::move(pq);
     }

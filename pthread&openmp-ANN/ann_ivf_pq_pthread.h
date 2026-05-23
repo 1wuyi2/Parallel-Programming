@@ -63,7 +63,7 @@ ivf_pq_search_pthread(const float* base, const float* query,
     if (num_threads <= 0) num_threads = 4;
     if (local_p < k) local_p = k;
 
-    // 1. 粗排（单线程）
+    // 1. 粗排
     std::vector<std::pair<float, uint32_t>> cluster_ips(idx.nlist);
     for (size_t c = 0; c < idx.nlist; ++c) {
         float ip = inner_product_neon(query, idx.centroids.data() + c * vecdim, vecdim);
@@ -92,7 +92,7 @@ ivf_pq_search_pthread(const float* base, const float* query,
         candidates.insert(candidates.end(), list.begin(), list.end());
     }
 
-    // 3. 构建 LUT（单线程）
+    // 3. 构建 LUT
     std::vector<float> lut;
     build_lut(query, idx.pq, lut);
 
@@ -134,7 +134,7 @@ ivf_pq_search_pthread(const float* base, const float* query,
         merged.resize(nprobe);
     }
 
-    // 6. 精排（浮点内积）
+    // 6. 精排
     std::priority_queue<std::pair<float, uint32_t>> fine_pq;
     for (auto& cand : merged) {
         uint32_t id = cand.second;

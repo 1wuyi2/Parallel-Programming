@@ -5,16 +5,10 @@
 #include <queue>
 #include <algorithm>
 #include <string>
-#include "ivf_pq_utils.h"   // IVFPQIndex, build_ivf_pq_index, build_lut 等
-#include "ann_simd.h"       // inner_product_neon
+#include "ivf_pq_utils.h"   
+#include "ann_simd.h"       
 
-// IVF‑PQ + OpenMP 多线程搜索
-// 参数：
-//   nprobe_clusters : 探测的簇数
-//   nprobe          : 粗排保留的候选数（精排前选 top‑nprobe）
-//   num_threads     : 查表累加阶段的线程数
-//   local_p         : 每个线程在查表阶段保留的局部候选数 (≥ k)
-//   schedule_type   : 查表循环的调度策略
+
 inline std::priority_queue<std::pair<float, uint32_t>>
 ivf_pq_search_omp(const float* base, const float* query,
                   IVFPQIndex& idx, size_t base_number, size_t vecdim,
@@ -24,7 +18,7 @@ ivf_pq_search_omp(const float* base, const float* query,
     if (num_threads <= 0) num_threads = omp_get_max_threads();
     if (local_p < k) local_p = k;
 
-    // 1. 粗排：计算到所有簇中心的内积（单线程）
+    // 1. 粗排
     std::vector<std::pair<float, uint32_t>> cluster_ips(idx.nlist);
     for (size_t c = 0; c < idx.nlist; ++c) {
         float ip = inner_product_neon(query, idx.centroids.data() + c * vecdim, vecdim);
@@ -53,15 +47,15 @@ ivf_pq_search_omp(const float* base, const float* query,
         candidates.insert(candidates.end(), list.begin(), list.end());
     }
 
-    // 3. 构建 LUT（单线程，复用已有函数）
+    // 3. 构建 LUT
     std::vector<float> lut;
     build_lut(query, idx.pq, lut);
 
-    // 4. 多线程查表累加（每个线程维护局部 top‑p）
+    // 4. 多线程查表累加
     size_t total = candidates.size();
     std::vector<std::vector<std::pair<float, uint32_t>>> local_results(num_threads);
 
-    // 小顶堆比较器（保留内积最大的 local_p 个）
+    // 小顶堆比较器
     auto cmp = [](const std::pair<float, uint32_t>& a,
                   const std::pair<float, uint32_t>& b) {
         return a.first > b.first;
@@ -185,7 +179,7 @@ ivf_pq_search_omp(const float* base, const float* query,
         merged.resize(nprobe);
     }
 
-    // 6. 精排：对候选向量使用原始浮点内积，选出最终 top‑k
+    // 6. 精排
     std::priority_queue<std::pair<float, uint32_t>> fine_pq;
     for (auto& cand : merged) {
         uint32_t id = cand.second;

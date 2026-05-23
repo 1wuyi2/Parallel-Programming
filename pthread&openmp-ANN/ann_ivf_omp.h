@@ -17,7 +17,7 @@ ivf_search_omp(const float* base, const float* query,
     if (num_threads <= 0) num_threads = omp_get_max_threads();
     if (local_p < k) local_p = k;
 
-    // 1. 粗排（单线程）
+    // 1. 粗排
     std::vector<std::pair<float, uint32_t>> cluster_ips(idx.nlist);
     for (size_t c = 0; c < idx.nlist; ++c) {
         float ip = inner_product_neon(query, idx.centroids.data() + c * vecdim, vecdim);
