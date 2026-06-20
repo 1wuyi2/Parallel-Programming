@@ -6,3 +6,24 @@
 *.gch
 *.out
 *.log
+# build outputs
+*.exe
+*.obj
+*.o
+*.pdb
+*.ilk
+*.exp
+*.lib
+
+# dataset
+ann_GPU/data/
+
+# temporary files
+*.log
+*.aux
+*.toc
+*.out
+*.synctex.gz
+
+# optional: if hnswlib is only third-party dependency and not required in submission
+ann_GPU/hnswlib/
